@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Multi-Step Form with Document Generation</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/docx@8.5.0/build/index.min.js"></script>
+    <script>
+// Ensure docx is available globally
+window.docxReady = new Promise((resolve) => {
+  if (typeof docx !== 'undefined') {
+    resolve(true);
+  } else {
+    const checkDocx = setInterval(() => {
+      if (typeof docx !== 'undefined') {
+        clearInterval(checkDocx);
+        resolve(true);
+      }
+    }, 100);
+    
+    // Timeout after 10 seconds
+    setTimeout(() => {
+      clearInterval(checkDocx);
+      resolve(false);
+    }, 10000);
+  }
+});
+</script>
+</head>
+<body>
+    <div class="container">
+        <div class="form-container">
+            <div class="progress-bar">
+                <div class="progress-step active" data-step="1">
+                    <div class="step-number">1</div>
+                    <div class="step-title">Personal Info</div>
+                </div>
+                <div class="progress-step" data-step="2">
+                    <div class="step-number">2</div>
+                    <div class="step-title">Contact Details</div>
+                </div>
+                <div class="progress-step" data-step="3">
+                    <div class="step-number">3</div>
+                    <div class="step-title">Additional Info</div>
+                </div>
+                <div class="progress-step" data-step="4">
+                    <div class="step-number">4</div>
+                    <div class="step-title">Review</div>
+                </div>
+            </div>
+
+            <form id="stepperForm" class="stepper-form">
+                <!-- Step 1: Personal Information -->
+                <div class="form-step active" data-step="1">
+                    <h2>Personal Information</h2>
+                    <div class="form-group">
+                        <label for="firstName">First Name *</label>
+                        <input type="text" id="firstName" name="firstName" required>
+                        <span class="error-message"></span>
+                    </div>
+                    <div class="form-group">
+                        <label for="lastName">Last Name *</label>
+                        <input type="text" id="lastName" name="lastName" required>
+                        <span class="error-message"></span>
+                    </div>
+                    <div class="form-group">
+                        <label for="dateOfBirth">Date of Birth</label>
+                        <input type="date" id="dateOfBirth" name="dateOfBirth">
+                    </div>
+                    <div class="form-group">
+                        <label for="gender">Gender</label>
+                        <select id="gender" name="gender">
+                            <option value="">Select Gender</option>
+                            <option value="male">Male</option>
+                            <option value="female">Female</option>
+                            <option value="other">Other</option>
+                            <option value="prefer-not-to-say">Prefer not to say</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Step 2: Contact Details -->
+                <div class="form-step" data-step="2">
+                    <h2>Contact Details</h2>
+                    <div class="form-group">
+                        <label for="email">Email Address *</label>
+                        <input type="email" id="email" name="email" required>
+                        <span class="error-message"></span>
+                    </div>
+                    <div class="form-group">
+                        <label for="phone">Phone Number</label>
+                        <input type="tel" id="phone" name="phone">
+                    </div>
+                    <div class="form-group">
+                        <label for="address">Street Address</label>
+                        <textarea id="address" name="address" rows="3"></textarea>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="city">City</label>
+                            <input type="text" id="city" name="city">
+                        </div>
+                        <div class="form-group">
+                            <label for="state">State/Province</label>
+                            <input type="text" id="state" name="state">
+                        </div>
+                        <div class="form-group">
+                            <label for="zipCode">ZIP/Postal Code</label>
+                            <input type="text" id="zipCode" name="zipCode">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="country">Country</label>
+                        <select id="country" name="country">
+                            <option value="">Select Country</option>
+                            <option value="us">United States</option>
+                            <option value="ca">Canada</option>
+                            <option value="uk">United Kingdom</option>
+                            <option value="au">Australia</option>
+                            <option value="de">Germany</option>
+                            <option value="fr">France</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Step 3: Additional Information -->
+                <div class="form-step" data-step="3">
+                    <h2>Additional Information</h2>
+                    <div class="form-group">
+                        <label for="occupation">Occupation</label>
+                        <input type="text" id="occupation" name="occupation">
+                    </div>
+                    <div class="form-group">
+                        <label for="company">Company/Organization</label>
+                        <input type="text" id="company" name="company">
+                    </div>
+                    <div class="form-group">
+                        <label for="experience">Years of Experience</label>
+                        <select id="experience" name="experience">
+                            <option value="">Select Experience</option>
+                            <option value="0-1">0-1 years</option>
+                            <option value="2-5">2-5 years</option>
+                            <option value="6-10">6-10 years</option>
+                            <option value="11-15">11-15 years</option>
+                            <option value="16+">16+ years</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="skills">Skills (comma-separated)</label>
+                        <textarea id="skills" name="skills" rows="3" placeholder="e.g., JavaScript, Python, Project Management"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="interests">Interests</label>
+                        <div class="checkbox-group">
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="interests" value="technology">
+                                <span class="checkmark"></span>
+                                Technology
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="interests" value="sports">
+                                <span class="checkmark"></span>
+                                Sports
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="interests" value="music">
+                                <span class="checkmark"></span>
+                                Music
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="interests" value="travel">
+                                <span class="checkmark"></span>
+                                Travel
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="interests" value="reading">
+                                <span class="checkmark"></span>
+                                Reading
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="interests" value="cooking">
+                                <span class="checkmark"></span>
+                                Cooking
+                            </label>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="comments">Additional Comments</label>
+                        <textarea id="comments" name="comments" rows="4"></textarea>
+                    </div>
+                </div>
+
+                <!-- Step 4: Review -->
+                <div class="form-step" data-step="4">
+                    <h2>Review Your Information</h2>
+                    <div id="reviewContent" class="review-content">
+                        <!-- Review content will be populated by JavaScript -->
+                    </div>
+                    <div class="form-group">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="agreeTerms" name="agreeTerms" required>
+                            <span class="checkmark"></span>
+                            I agree to the terms and conditions *
+                        </label>
+                    </div>
+                    <div class="form-group">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="subscribeNewsletter" name="subscribeNewsletter">
+                            <span class="checkmark"></span>
+                            Subscribe to newsletter for updates
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Navigation Buttons -->
+                <div class="form-navigation">
+                    <button type="button" id="prevBtn" class="btn btn-secondary" style="display: none;">Previous</button>
+                    <button type="button" id="nextBtn" class="btn btn-primary">Next</button>
+                    <button type="submit" id="submitBtn" class="btn btn-success" style="display: none;">Submit & Generate Document</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Success Modal -->
+        <div id="successModal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>Form Submitted Successfully!</h3>
+                    <span class="close">&times;</span>
+                </div>
+                <div class="modal-body">
+                    <p>Your form has been submitted successfully. You can download your document below:</p>
+                    <div class="document-actions">
+                        <button id="downloadPDF" class="btn btn-primary">Download PDF</button>
+                        <button id="downloadDOCX" class="btn btn-success">Download DOCX</button>
+                        <button id="downloadJSON" class="btn btn-secondary">Download JSON</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
